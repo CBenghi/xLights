@@ -98,6 +98,9 @@ PinwheelEffect::Pinwheel3DType PinwheelEffect::to3dType(const std::string& pinwh
     return PW_3D_NONE;
 }
 
+int prevPeriod = -1;
+double prevPos = 0;
+
 void PinwheelEffect::Render(Effect* effect, const SettingsMap& SettingsMap, RenderBuffer& buffer) {
 
     float oset = buffer.GetEffectTimeIntervalPosition();
@@ -114,7 +117,16 @@ void PinwheelEffect::Render(Effect* effect, const SettingsMap& SettingsMap, Rend
     int poffset = GetValueCurveInt("Pinwheel_Offset", 0, SettingsMap, oset, PINWHEEL_OFFSET_MIN, PINWHEEL_OFFSET_MAX, buffer.GetStartTimeMS(), buffer.GetEndTimeMS());
     const std::string& pinwheel_style = SettingsMap["CHOICE_Pinwheel_Style"];
 
-    double pos = (double)((buffer.curPeriod - buffer.curEffStartPer) * pspeed * buffer.frameTimeInMs) / (double)PINWHEEL_SPEED_MAX;
+    if (prevPeriod == -1) {
+        prevPeriod = buffer.curEffStartPer;
+        prevPos = 0;
+    }
+
+    double posDelta = (double)((buffer.curPeriod - prevPeriod) * pspeed * buffer.frameTimeInMs) / (double)PINWHEEL_SPEED_MAX;
+    double pos = prevPos + posDelta;
+    prevPeriod = buffer.curPeriod;
+    prevPos = pos;
+
     int degrees_per_arm = 1;
     if (pinwheel_arms > 0) degrees_per_arm = 360 / pinwheel_arms;
     float armsize = (pinwheel_armsize / 100.0);
