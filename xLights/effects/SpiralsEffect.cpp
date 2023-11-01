@@ -90,7 +90,28 @@ void SpiralsEffect::Render(Effect *effect, const SettingsMap &SettingsMap, Rende
     double spiralGap = deltaStrands - SpiralThickness;
 
     int Direction = Movement > 0.001 ? 1 : (Movement < -0.001 ? -1 : 0);
+    // Movement is the number of cycles in the time interval, so it is equivalent to the speed (framewidth per duration)
+    // position is computed as a value from 0 to 1
+    // later SpiralState is multiplied by 10
     double position = buffer.GetEffectTimeIntervalPosition(std::abs(Movement));
+    // avail variables:
+    // buffer.curEffStartPer;
+    // buffer.curEffEndPer
+    // buffer.curPeriod
+
+    if (prevPeriod == -1) {
+        prevPeriod = buffer.curEffStartPer;
+        prevPos = 0;
+    }
+    double speed = std::abs(Movement) / (buffer.curEffEndPer - buffer.curEffStartPer);
+    double posDelta = (double)(buffer.curPeriod - prevPeriod) * speed;
+    position = prevPos + posDelta; // position can be greater than 0, we need to modularize it
+    position = position - floor(position);
+
+    // store backing fields
+    prevPeriod = buffer.curPeriod;
+    prevPos = position;
+    
     long ThicknessState = 0;
     if (grow && shrink) {
         ThicknessState = position <= 0.5 ? spiralGap * (position * 2) : spiralGap * ((1 - position) * 2);

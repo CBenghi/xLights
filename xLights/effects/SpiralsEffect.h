@@ -76,4 +76,8 @@ public:
 
 protected:
     virtual xlEffectPanel* CreatePanel(wxWindow* parent) override;
+
+private:
+    int prevPeriod = -1;
+    double prevPos = 0;
 };
