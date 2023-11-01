@@ -98,8 +98,7 @@ PinwheelEffect::Pinwheel3DType PinwheelEffect::to3dType(const std::string& pinwh
     return PW_3D_NONE;
 }
 
-int prevPeriod = -1;
-double prevPos = 0;
+
 
 void PinwheelEffect::Render(Effect* effect, const SettingsMap& SettingsMap, RenderBuffer& buffer) {
 

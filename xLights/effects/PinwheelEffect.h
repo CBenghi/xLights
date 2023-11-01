@@ -108,4 +108,8 @@ protected:
 
     Pinwheel3DType to3dType(const std::string& pinwheel_3d);
     void adjustColor(Pinwheel3DType pw3dType, xlColor& color, HSVValue& hsv, bool allowAlpha, float round);
+
+private:
+    int prevPeriod = -1;
+    double prevPos = 0;
 };
