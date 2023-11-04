@@ -42,7 +42,7 @@ class VirtualMatrix
     int _swsQuality;
     PlayerWindow* _window;
     bool _suppress;
-    int ROWXOFFSET = 0;
+    int _rowXoffset = 0;
 
 private:
     void InitImage();
