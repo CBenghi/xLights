@@ -23,7 +23,7 @@ extern "C"
 
 #include <log4cpp/Category.hh>
 
-VirtualMatrix::VirtualMatrix(OutputManager* outputManager, int width, int height, bool topMost, VMROTATION rotation, wxImageResizeQuality quality, int swsQuality, const std::string& startChannel, const std::string& name, wxSize size, wxPoint loc, bool useMatrixSize, int matrixMultiplier)
+VirtualMatrix::VirtualMatrix(OutputManager* outputManager, int width, int height, bool topMost, VMROTATION rotation, VMPIXELCHANNELS pixelChannels, wxImageResizeQuality quality, int swsQuality, const std::string& startChannel, const std::string& name, wxSize size, wxPoint loc, bool useMatrixSize, int matrixMultiplier)
 {
     _suppress = false;
     _outputManager = outputManager;
@@ -36,6 +36,7 @@ VirtualMatrix::VirtualMatrix(OutputManager* outputManager, int width, int height
     _useMatrixSize = useMatrixSize;
     _matrixMultiplier = matrixMultiplier;
     _rotation = rotation;
+    _pixelChannels = pixelChannels;
     _quality = quality;
     _swsQuality = swsQuality;
     _size = size;
@@ -57,6 +58,7 @@ VirtualMatrix::VirtualMatrix(OutputManager* outputManager, ScheduleOptions* opti
     _useMatrixSize = false;
     _matrixMultiplier = 1;
     _rotation = VMROTATION::VM_NORMAL;
+    _pixelChannels = VMPIXELCHANNELS::RGB;
     _quality = wxIMAGE_QUALITY_HIGH;
     _swsQuality = -1;
     _size = options->GetDefaultVideoSize();
@@ -65,7 +67,7 @@ VirtualMatrix::VirtualMatrix(OutputManager* outputManager, ScheduleOptions* opti
     _window = nullptr;
 }
 
-VirtualMatrix::VirtualMatrix(OutputManager* outputManager, int width, int height, bool topMost, const std::string& rotation, const std::string& quality, const std::string& startChannel, const std::string& name, wxSize size, wxPoint loc, bool useMatrixSize, int matrixMultiplier)
+VirtualMatrix::VirtualMatrix(OutputManager* outputManager, int width, int height, bool topMost, const std::string& rotation, const std::string& pixelChannels, const std::string& quality, const std::string& startChannel, const std::string& name, wxSize size, wxPoint loc, bool useMatrixSize, int matrixMultiplier)
 {
     _suppress = false;
     _outputManager = outputManager;
@@ -78,6 +80,7 @@ VirtualMatrix::VirtualMatrix(OutputManager* outputManager, int width, int height
     _useMatrixSize = useMatrixSize;
     _matrixMultiplier = matrixMultiplier;
     _rotation = EncodeRotation(rotation);
+    _pixelChannels = EncodePixelChannels(pixelChannels);
     _quality = EncodeScalingQuality(quality, _swsQuality);
     _size = size;
     _location = loc;
@@ -97,6 +100,7 @@ VirtualMatrix::VirtualMatrix(OutputManager* outputManager, wxXmlNode* n)
     _topMost = (n->GetAttribute("TopMost", "TRUE") == "TRUE");
     _useMatrixSize = (n->GetAttribute("UseMatrixSize", "FALSE") == "TRUE");
     _rotation = EncodeRotation(n->GetAttribute("Rotation", "None").ToStdString());
+    _pixelChannels = EncodePixelChannels(n->GetAttribute("PixelChannels", "RGB").ToStdString());
     _quality = EncodeScalingQuality(n->GetAttribute("Quality", "Bilinear").ToStdString(), _swsQuality);
     _size = wxSize(wxAtoi(n->GetAttribute("WW", "300")), wxAtoi(n->GetAttribute("WH", "300")));
     _matrixMultiplier = wxAtoi(n->GetAttribute("MatrixMultiplier", "1"));
@@ -121,6 +125,7 @@ wxXmlNode* VirtualMatrix::Save()
         res->AddAttribute("UseMatrixSize", "TRUE");
     }
     res->AddAttribute("Rotation", DecodeRotation(_rotation));
+    res->AddAttribute("PixelChannels", DecodePixelChannels(_pixelChannels));
     res->AddAttribute("Quality", DecodeScalingQuality(_quality, _swsQuality));
     res->AddAttribute("WW", wxString::Format(wxT("%i"), (long)_size.GetWidth()));
     res->AddAttribute("WH", wxString::Format(wxT("%i"), (long)_size.GetHeight()));
@@ -128,7 +133,6 @@ wxXmlNode* VirtualMatrix::Save()
     res->AddAttribute("Y", wxString::Format(wxT("%i"), (long)_location.y));
     res->AddAttribute("MatrixMultiplier", wxString::Format(wxT("%d"), _matrixMultiplier));
     res->AddAttribute("StartChannel", _startChannel);
-
     return res;
 }
 
@@ -173,6 +177,24 @@ std::string VirtualMatrix::DecodeRotation(VMROTATION rotation)
     else
     {
         return "90 CCW";
+    }
+}
+
+VMPIXELCHANNELS VirtualMatrix::EncodePixelChannels(const std::string rotation)
+{
+    if (wxString(rotation).Lower() == "rgbw") {
+        return VMPIXELCHANNELS::RGBW;
+    } else {
+        return VMPIXELCHANNELS::RGB;
+    }
+}
+
+std::string VirtualMatrix::DecodePixelChannels(VMPIXELCHANNELS pixelChannels)
+{
+    if (pixelChannels == VMPIXELCHANNELS::RGBW) {
+        return "RGBW";
+    } else {
+        return "RGB";
     }
 }
 
@@ -352,9 +374,15 @@ void VirtualMatrix::Frame(uint8_t*buffer, size_t size)
 
     long sc = _outputManager->DecodeStartChannel(_startChannel);
 
-    size_t end = _width * _height * 3 < size - (sc - 1) ? _width * _height * 3 : size - (sc - 1);
+    const int channelsPerPixel = GetPixelChannelsCount();
+    size_t end = _width * _height * channelsPerPixel < size - (sc - 1) ? _width * _height * channelsPerPixel : size - (sc - 1);
 
-    for (size_t i = 0; i < end; i += 3)
+
+    // prepare values for positive and negative offset, as they need different offset behaviour
+    int start = (_rowXoffset > 0) ? -_rowXoffset : abs(_rowXoffset * ((int)_height));
+
+
+    for (size_t i = 0; i < end; i += channelsPerPixel)
     {
         uint8_t* pb = buffer + (sc - 1) + i;
         uint8_t r = *pb;
@@ -368,31 +396,61 @@ void VirtualMatrix::Frame(uint8_t*buffer, size_t size)
         {
             b = *(pb + 2);
         }
-        _image.SetRGB((i / 3) % _width, i / 3 / _width, r, g, b);
+        if (channelsPerPixel > 3)
+        {
+            uint8_t w = 0;
+            if (i + 3 < end) {
+                w = *(pb + 3);
+            }
+            if (w != 0)
+            {
+                r = g = b = w;
+            }
+        }
+        int x = (i / channelsPerPixel) % _width; // 0 based
+        int y = i / channelsPerPixel / _width;   // 0 based
+
+        x += _rowXoffset * (_height - y) + start;
+
+        _image.SetRGB(x, y, r, g, b);
     }
 
+    int imageOffset = 0;
     if (_rotation == VMROTATION::VM_NORMAL)
     {
-        _window->SetImage(_image);
+        imageOffset = _window->SetImage(_image);
     }
     else if (_rotation == VMROTATION::VM_FLIP_HORIZONTAL) {
         wxImage rot = _image.Mirror(true);
-        _window->SetImage(rot);
+        imageOffset = _window->SetImage(rot);
     }
     else if (_rotation == VMROTATION::VM_FLIP_VERTICAL) {
         wxImage rot = _image.Mirror(false);
-        _window->SetImage(rot);
+        imageOffset = _window->SetImage(rot);
     }
     else if (_rotation == VMROTATION::VM_90)
     {
         wxImage rot = _image.Rotate90();
-        _window->SetImage(rot);
+        imageOffset = _window->SetImage(rot);
     }
     else
     {
         wxImage rot = _image.Rotate90(false);
-        _window->SetImage(rot);
+        imageOffset = _window->SetImage(rot);
     }
+    if (imageOffset != _rowXoffset)
+    {
+        _image.Destroy();
+        _rowXoffset = imageOffset;
+        InitImage();
+    }
+}
+
+void VirtualMatrix::InitImage()
+{
+    // set the image width to accomodate any offset
+    int delta = abs(_rowXoffset) * (_height - 1);
+    _image = wxImage(_width + delta, _height);
 }
 
 void VirtualMatrix::Start()
@@ -415,8 +473,7 @@ void VirtualMatrix::Start()
     {
         _window->Hide();
     }
-
-    _image = wxImage(_width, _height);
+    InitImage();
 }
 
 void VirtualMatrix::Stop()
@@ -453,4 +510,9 @@ void VirtualMatrix::Suppress(bool suppress)
 long VirtualMatrix::GetStartChannelAsNumber() const
 {
     return _outputManager->DecodeStartChannel(_startChannel);
+}
+
+int VirtualMatrix::GetPixelChannelsCount() const
+{
+    return (_pixelChannels == VMPIXELCHANNELS::RGBW) ? 4 : 3;
 }

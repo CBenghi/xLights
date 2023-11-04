@@ -28,6 +28,7 @@ class PlayerWindow: public wxFrame
     int _swsQuality;
     std::timed_mutex _mutex;
     std::atomic_bool _imageChanged;
+    int offset = 0;
 
     bool PrepareImage();
 
@@ -35,13 +36,14 @@ class PlayerWindow: public wxFrame
 
 		PlayerWindow(wxWindow* parent, bool topMost, wxImageResizeQuality quality = wxIMAGE_QUALITY_HIGH, int swsQuality = -1, wxWindowID id=wxID_ANY,const wxPoint& pos=wxDefaultPosition,const wxSize& size=wxDefaultSize);
 		virtual ~PlayerWindow();
-        void SetImage(const wxImage& image);
+        int SetImage(const wxImage& image);
 
 	private:
 
         void OnMouseLeftUp(wxMouseEvent& event);
         void OnMouseMove(wxMouseEvent& event);
         void OnMouseLeftDown(wxMouseEvent& event);
+        void OnKey(wxKeyEvent& event);
         void Paint(wxPaintEvent& event);
 
 		DECLARE_EVENT_TABLE()
