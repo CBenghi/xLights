@@ -27,6 +27,7 @@ BEGIN_EVENT_TABLE(PlayerWindow, wxWindow)
     EVT_MOTION(PlayerWindow::OnMouseMove)
     EVT_LEFT_DOWN(PlayerWindow::OnMouseLeftDown)
     EVT_LEFT_UP(PlayerWindow::OnMouseLeftUp)
+    EVT_KEY_DOWN(PlayerWindow::OnKey)
     EVT_PAINT(PlayerWindow::Paint)
 END_EVENT_TABLE()
 
@@ -57,6 +58,7 @@ PlayerWindow::PlayerWindow(wxWindow* parent, bool topMost, wxImageResizeQuality 
     Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PlayerWindow::OnMouseLeftDown, 0, this);
     Connect(wxEVT_LEFT_UP, (wxObjectEventFunction)&PlayerWindow::OnMouseLeftUp, 0, this);
     Connect(wxEVT_MOTION, (wxObjectEventFunction)&PlayerWindow::OnMouseMove, 0, this);
+    Connect(wxEVT_KEY_DOWN, (wxObjectEventFunction)&PlayerWindow::OnKey, 0, this);
     Connect(wxEVT_PAINT, (wxObjectEventFunction)&PlayerWindow::Paint, 0, this);
 
     // prevent this window from stealing focus
@@ -144,7 +146,7 @@ bool PlayerWindow::PrepareImage()
     return true;
 }
 
-void PlayerWindow::SetImage(const wxImage& image)
+int PlayerWindow::SetImage(const wxImage& image)
 {
     static log4cpp::Category& logger_frame = log4cpp::Category::getInstance(std::string("log_frame"));
 
@@ -168,6 +170,7 @@ void PlayerWindow::SetImage(const wxImage& image)
             Refresh(false); // force a paint on the main thread
         }
     }
+    return offset;
 }
 
 void PlayerWindow::Paint(wxPaintEvent& event)
@@ -205,6 +208,19 @@ void PlayerWindow::OnMouseLeftDown(wxMouseEvent& event)
     GetPosition(&x, &y);
     _startDragPos = wxPoint(x, y);
     _startMousePos = event.GetPosition() + _startDragPos;
+}
+
+void PlayerWindow::OnKey(wxKeyEvent& event)
+{
+    switch (event.GetKeyCode()) 
+    {
+    case WXK_LEFT:
+        offset--;
+        break;
+    case WXK_RIGHT:
+        offset++;
+        break;
+    }
 }
 
 void PlayerWindow::OnMouseMove(wxMouseEvent& event)

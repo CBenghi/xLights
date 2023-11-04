@@ -377,6 +377,11 @@ void VirtualMatrix::Frame(uint8_t*buffer, size_t size)
     const int channelsPerPixel = GetPixelChannelsCount();
     size_t end = _width * _height * channelsPerPixel < size - (sc - 1) ? _width * _height * channelsPerPixel : size - (sc - 1);
 
+
+    // prepare values for positive and negative offset, as they need different offset behaviour
+    int start = (ROWXOFFSET > 0) ? -ROWXOFFSET : abs(ROWXOFFSET * ((int)_height));
+
+
     for (size_t i = 0; i < end; i += channelsPerPixel)
     {
         uint8_t* pb = buffer + (sc - 1) + i;
@@ -402,31 +407,50 @@ void VirtualMatrix::Frame(uint8_t*buffer, size_t size)
                 r = g = b = w;
             }
         }
-        _image.SetRGB((i / channelsPerPixel) % _width, i / channelsPerPixel / _width, r, g, b);
+        int x = (i / channelsPerPixel) % _width; // 0 based
+        int y = i / channelsPerPixel / _width;   // 0 based
+
+        x += ROWXOFFSET * (_height - y) + start;
+
+        _image.SetRGB(x, y, r, g, b);
     }
 
+    int imageOffset = 0;
     if (_rotation == VMROTATION::VM_NORMAL)
     {
-        _window->SetImage(_image);
+        imageOffset = _window->SetImage(_image);
     }
     else if (_rotation == VMROTATION::VM_FLIP_HORIZONTAL) {
         wxImage rot = _image.Mirror(true);
-        _window->SetImage(rot);
+        imageOffset = _window->SetImage(rot);
     }
     else if (_rotation == VMROTATION::VM_FLIP_VERTICAL) {
         wxImage rot = _image.Mirror(false);
-        _window->SetImage(rot);
+        imageOffset = _window->SetImage(rot);
     }
     else if (_rotation == VMROTATION::VM_90)
     {
         wxImage rot = _image.Rotate90();
-        _window->SetImage(rot);
+        imageOffset = _window->SetImage(rot);
     }
     else
     {
         wxImage rot = _image.Rotate90(false);
-        _window->SetImage(rot);
+        imageOffset = _window->SetImage(rot);
     }
+    if (imageOffset != ROWXOFFSET)
+    {
+        _image.Destroy();
+        ROWXOFFSET = imageOffset;
+        InitImage();
+    }
+}
+
+void VirtualMatrix::InitImage()
+{
+    // set the image width to accomodate any offset
+    int delta = abs(ROWXOFFSET) * (_height - 1);
+    _image = wxImage(_width + delta, _height);
 }
 
 void VirtualMatrix::Start()
@@ -449,8 +473,7 @@ void VirtualMatrix::Start()
     {
         _window->Hide();
     }
-
-    _image = wxImage(_width, _height);
+    InitImage();
 }
 
 void VirtualMatrix::Stop()
