@@ -727,7 +727,7 @@ xScheduleFrame::xScheduleFrame(wxWindow* parent, const std::string& showdir, con
     _timer.SetName("xSchedule frame timer");
     _timerSchedule.SetName("xSchedule schedule timer");
 
-    SetTitle("xLights Scheduler " + GetDisplayVersionString());
+    SetTitle("xLights Scheduler " + GetDisplayVersionString() + " CUSTOM https://github.com/CBenghi/xLights");
 
     StaticText_RemoteWarning->SetFont(wxFont(14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
         wxFONTWEIGHT_BOLD, false, wxEmptyString, wxFONTENCODING_DEFAULT));
