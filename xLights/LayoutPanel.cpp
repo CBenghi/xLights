@@ -877,6 +877,7 @@ void LayoutPanel::OnPropertyGridChange(wxPropertyGridEvent& event) {
     }
     else {
         if (editing_models) {
+            xlights->AbortRender();
             if (selectedBaseObject != nullptr) {
                 Model* selectedModel = dynamic_cast<Model*>(selectedBaseObject);
                 //model property
@@ -946,6 +947,7 @@ void LayoutPanel::OnPropertyGridChanging(wxPropertyGridEvent& event) {
     xlights->AddTraceMessage("LayoutPanel::OnPropertyGridChanging  Property: " + name);
     if (selectedBaseObject != nullptr) {
         if( editing_models ) {
+            xlights->AbortRender();
             Model* selectedModel = dynamic_cast<Model*>(selectedBaseObject);
             if ("ModelName" == name) {
                 std::string safename = Model::SafeModelName(event.GetValue().GetString().ToStdString());
@@ -2223,9 +2225,7 @@ public:
         wxImageFileProperty(label, name, ""), lastFileName(value)
     {
         SetAttribute(wxPG_FILE_WILDCARD, "Image files|*.png;*.bmp;*.jpg;*.gif;*.jpeg"
-#if wxUSE_WEBP
                                          ";*.webp"
-            #endif
                                          "|All files (*.*)|*.*");
         SetValueFromString(value);
         if (img != nullptr) {

@@ -11,7 +11,7 @@
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
-#if wxUSE_IMAGE && wxUSE_WEBP
+#if wxUSE_IMAGE
 
 #include "wx/imagwebp.h"
 #include "webp/demux.h"
@@ -140,7 +140,7 @@ bool wxWEBPHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbos
     {
         wxLogWarning("WebP: Saving with alpha not implemented.");
     }
-    unsigned char * rgb = image->GetData();
+    //unsigned char * rgb = image->GetData();
     int stride = image->GetWidth();
     float quality_factor = 90;
     if (image->HasOption(wxIMAGE_OPTION_QUALITY))
@@ -173,4 +173,4 @@ bool wxWEBPHandler::DoCanRead(wxInputStream& stream)
 
 #endif // wxUSE_STREAMS
 
-#endif // wxUSE_IMAGE && wxUSE_WEBP
+#endif // wxUSE_IMAGE
