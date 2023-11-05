@@ -259,23 +259,29 @@ bool SerialOutput::TxEmpty() const {
     return true;
 }
 
-Output::PINGSTATE SerialOutput::Ping() const {
+Output::PINGSTATE SerialOutput::Ping() {
 
     if (_serial != nullptr && _ok) {
         return Output::PINGSTATE::PING_OPEN;
     }
     else {
-
         Output::PINGSTATE res = Output::PINGSTATE::PING_ALLFAILED;
-        
+        wxLongLong thisSerialCheck = wxGetUTCTimeMillis();
+        if (thisSerialCheck - lastSerialCheck < 30000 && lastSerialResult == Output::PINGSTATE::PING_OPENED)
+        {
+            return Output::PINGSTATE::PING_OPENED;
+        }
+        lastSerialCheck = thisSerialCheck;
+        // OutputDebugString(L"Checking serial");
         SerialPort* serial = new SerialPort();
         int errcode = serial->Open(_commPort, _baudRate, _serialConfig);
         if (errcode >= 0) {
             res = Output::PINGSTATE::PING_OPENED;
             serial->Close();
         }
-
         delete serial;
+
+        lastSerialResult = res;
         return res;
     }
 }

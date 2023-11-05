@@ -15,8 +15,11 @@
 
 class SerialOutput : public Output
 {
-protected:
 
+
+protected:
+    Output::PINGSTATE lastSerialResult = Output::PINGSTATE::PING_UNAVAILABLE;
+    wxLongLong lastSerialCheck = wxGetUTCTimeMillis();
     #pragma region Member Variables
     SerialPort* _serial = nullptr;
     char _serialConfig[4];
@@ -78,7 +81,7 @@ public:
 
     virtual std::string GetSortName() const override { return GetCommPort(); }
 
-    PINGSTATE Ping() const;
+    PINGSTATE Ping();
     #pragma endregion
 
     #pragma region Operators
