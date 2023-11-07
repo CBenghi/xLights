@@ -858,6 +858,8 @@ void RenderableEffect::AdjustSettingsToBeFitToTime(int effectIdx, SettingsMap &s
             break;
         case EffectManager::eff_GUITAR:
             break;
+								case EffectManager::eff_RAINBOW:
+            break;
         }
     settings.erase("T_CHECKBOX_FitToTime");
     settings.erase("T_SLIDER_Speed");

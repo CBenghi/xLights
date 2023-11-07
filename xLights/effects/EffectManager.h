@@ -53,6 +53,7 @@ public:
         eff_PICTURES,
         eff_PINWHEEL,
         eff_PLASMA,
+        eff_RAINBOW,
         eff_RIPPLE,
         eff_SERVO,
         eff_SHADER,

@@ -41,6 +41,7 @@
 #include "PicturesEffect.h"
 #include "PinwheelEffect.h"
 #include "PlasmaEffect.h"
+#include "RainbowEffect.h"
 #include "RenderableEffect.h"
 #include "RippleEffect.h"
 #include "ServoEffect.h"
@@ -111,6 +112,7 @@ EffectManager::EffectManager()
     add(createEffect(eff_PICTURES));
     add(createEffect(eff_PINWHEEL));
     add(createEffect(eff_PLASMA));
+    add(createEffect(eff_RAINBOW));
     add(createEffect(eff_RIPPLE));
     add(createEffect(eff_SERVO));
     add(createEffect(eff_SHADER));
@@ -183,6 +185,7 @@ RenderableEffect *EffectManager::createEffect(RGB_EFFECTS_e eff) {
         case eff_PICTURES: return new PicturesEffect(eff_PICTURES);
         case eff_PINWHEEL: return new PinwheelEffect(eff_PINWHEEL);
         case eff_PLASMA: return new PlasmaEffect(eff_PLASMA);
+        case eff_RAINBOW: return new RainbowEffect(eff_RAINBOW);
         case eff_RIPPLE: return new RippleEffect(eff_RIPPLE);
         case eff_SERVO: return new ServoEffect (eff_SERVO);
         case eff_SHADER: return new ShaderEffect(eff_SHADER);

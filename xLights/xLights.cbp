@@ -1517,6 +1517,7 @@
 		<Unit filename="wxsmith/PlasmaPanel.wxs" />
 		<Unit filename="wxsmith/PreviewModels.wxs" />
 		<Unit filename="wxsmith/PreviewPane.wxs" />
+		<Unit filename="wxsmith/Rainbow.wxs" />
 		<Unit filename="wxsmith/RandomEffectsSettingsPanel.wxs" />
 		<Unit filename="wxsmith/RemapDMXChannelsDialog.wxs" />
 		<Unit filename="wxsmith/RenameTextDialog.wxs" />
@@ -1740,6 +1741,7 @@
 					<wxPanel wxs="wxsmith/PicturesPanel.wxs" src="effects/PicturesPanel.cpp" hdr="effects/PicturesPanel.h" fwddecl="1" i18n="1" name="PicturesPanel" language="CPP" />
 					<wxPanel wxs="wxsmith/PinwheelPanel.wxs" src="effects/PinwheelPanel.cpp" hdr="effects/PinwheelPanel.h" fwddecl="1" i18n="1" name="PinwheelPanel" language="CPP" />
 					<wxPanel wxs="wxsmith/PlasmaPanel.wxs" src="effects/PlasmaPanel.cpp" hdr="effects/PlasmaPanel.h" fwddecl="1" i18n="1" name="PlasmaPanel" language="CPP" />
+					<wxPanel wxs="wxsmith/RainbowPanel.wxs" src="effects/RainbowPanel.cpp" hdr="effects/RainbowPanel.h" fwddecl="1" i18n="1" name="RainbowPanel" language="CPP" />
 					<wxPanel wxs="wxsmith/RipplePanel.wxs" src="effects/RipplePanel.cpp" hdr="effects/RipplePanel.h" fwddecl="1" i18n="1" name="RipplePanel" language="CPP" />
 					<wxPanel wxs="wxsmith/ShapePanel.wxs" src="effects/ShapePanel.cpp" hdr="effects/ShapePanel.h" fwddecl="1" i18n="1" name="ShapePanel" language="CPP" />
 					<wxPanel wxs="wxsmith/ShimmerPanel.wxs" src="effects/ShimmerPanel.cpp" hdr="effects/ShimmerPanel.h" fwddecl="1" i18n="1" name="ShimmerPanel" language="CPP" />

@@ -1018,6 +1018,12 @@
     <ClCompile Include="effects\GuitarPanel.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+				<ClCompile Include="effects\RainbowEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="effects\RainbowPanel.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
     <ClCompile Include="graphics\opengl\xlOGL3GraphicsContext.cpp">
       <Filter>graphics\opengl</Filter>
     </ClCompile>
@@ -2062,6 +2068,12 @@
       <Filter>Effects</Filter>
     </ClInclude>
     <ClInclude Include="effects\GuitarPanel.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+				<ClInclude Include="effects\RainbowEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="effects\RainbowPanel.h">
       <Filter>Effects</Filter>
     </ClInclude>
     <ClInclude Include="graphics\opengl\xlOGL3GraphicsContext.h">
